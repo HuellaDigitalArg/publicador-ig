@@ -1,4 +1,9 @@
 __pycache__/
 *.json
 *.mp4
+*.txt
+!requirements.txt
 .env
+*key*
+*token*
+*secret*
