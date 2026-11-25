@@ -28,7 +28,7 @@ IG = "https://graph.instagram.com/v23.0"
 RUPLOAD = "https://rupload.facebook.com/ig-api-upload/v23.0"
 ENSAYO = os.environ.get("ENSAYO") == "1"
 # Carpeta de Drive -> cuenta de Instagram donde se publica (si no es la misma)
-CUENTA_DE = {"ciudaddebuenosaires": "Buenos Aires"}
+CUENTA_DE = {}  # vacío: cada carpeta publica en su propia cuenta (CABA es distrito aparte)
 SOLO = os.environ.get("SOLO", "").strip()
 
 
@@ -181,7 +181,6 @@ def main():
         nombre = prov["name"]
         if SOLO and norm(SOLO) != norm(nombre):
             continue
-        # CABA no tiene cuenta propia: se publica en la cuenta de Buenos Aires
         nombre_cuenta = CUENTA_DE.get(norm(nombre), nombre)
         cuenta = next((v for k, v in tokens.items() if norm(k) == norm(nombre_cuenta)), None)
         if not cuenta:
