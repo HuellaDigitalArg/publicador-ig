@@ -32,7 +32,7 @@ IG = "https://graph.facebook.com/v23.0"
 RUPLOAD = "https://rupload.facebook.com/ig-api-upload/v23.0"
 ENSAYO = os.environ.get("ENSAYO") == "1"
 # Carpeta de Drive -> cuenta de Instagram donde se publica (si no es la misma)
-CUENTA_DE = {}  # vacío: cada carpeta publica en su propia cuenta (CABA es distrito aparte)
+CUENTA_DE = {"ciudaddebuenosaires": "Buenos Aires"}  # CABA y provincia de BA -> @huelladigitalbuenosaires (publicaciones separadas)
 SOLO = os.environ.get("SOLO", "").strip()
 
 
@@ -119,8 +119,13 @@ def guardar_tokens(dv, tokens):
 
 
 # ---------------- Instagram ----------------
+def base(token):
+    """Token de Instagram Login (IGAA...) -> graph.instagram.com; de sistema -> graph.facebook.com"""
+    return "https://graph.instagram.com/v23.0" if token.startswith("IG") else IG
+
+
 def ig_get(path, token, **params):
-    r = requests.get(f"{IG}/{path}", params={**params, "access_token": token}, timeout=60)
+    r = requests.get(f"{base(token)}/{path}", params={**params, "access_token": token}, timeout=60)
     r.raise_for_status()
     return r.json()
 
@@ -134,7 +139,7 @@ def ya_publicado(user_id, token, caption):
 
 def publicar_reel(user_id, token, video_path, caption):
     # 1) Contenedor con subida directa (no hace falta link público)
-    r = requests.post(f"{IG}/{user_id}/media", data={
+    r = requests.post(f"{base(token)}/{user_id}/media", data={
         "media_type": "REELS", "upload_type": "resumable",
         "caption": caption, "share_to_feed": "true", "access_token": token}, timeout=60)
     r.raise_for_status()
@@ -156,7 +161,7 @@ def publicar_reel(user_id, token, video_path, caption):
     else:
         raise RuntimeError("Instagram tardó demasiado en procesar el video")
     # 4) Publicar
-    p = requests.post(f"{IG}/{user_id}/media_publish",
+    p = requests.post(f"{base(token)}/{user_id}/media_publish",
                       data={"creation_id": cid, "access_token": token}, timeout=120)
     p.raise_for_status()
     return p.json()["id"]
