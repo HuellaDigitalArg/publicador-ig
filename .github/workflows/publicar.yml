@@ -1,0 +1,43 @@
+name: Publicar Reels
+
+on:
+  schedule:
+    # Horas en UTC (Argentina = UTC-3)
+    # Buenos Aires: 8:30, 9:10, 9:50 ... 15:50 ART (cada 40 min)
+    - cron: "30 11,13,15,17 * * *"
+    - cron: "10 12,14,16,18 * * *"
+    - cron: "50 12,14,16,18 * * *"
+    # Resto de provincias: 12:00 y 16:00 ART
+    - cron: "0 15,19 * * *"
+    # Repasos por si GitHub se saltó alguna corrida: 17:00 y 18:00 ART
+    - cron: "0 20,21 * * *"
+  workflow_dispatch:
+    inputs:
+      solo:
+        description: "Solo esta provincia (vacío = todas)"
+        required: false
+      ensayo:
+        description: "1 = ensayo, no publica"
+        required: false
+        default: "0"
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python publicar.py
+        env:
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          TOKENS_FILE_ID: ${{ secrets.TOKENS_FILE_ID }}
+          SOLO: ${{ github.event.inputs.solo }}
+          ENSAYO: ${{ github.event.inputs.ensayo }}
