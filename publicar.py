@@ -27,6 +27,8 @@ TOKENS_ID = os.environ.get("TOKENS_FILE_ID") or "13oOkjd7BaENficOW2Bvkqs5pPDIA4Q
 IG = "https://graph.instagram.com/v23.0"
 RUPLOAD = "https://rupload.facebook.com/ig-api-upload/v23.0"
 ENSAYO = os.environ.get("ENSAYO") == "1"
+# Carpeta de Drive -> cuenta de Instagram donde se publica (si no es la misma)
+CUENTA_DE = {"ciudaddebuenosaires": "Buenos Aires"}
 SOLO = os.environ.get("SOLO", "").strip()
 
 
@@ -179,7 +181,9 @@ def main():
         nombre = prov["name"]
         if SOLO and norm(SOLO) != norm(nombre):
             continue
-        cuenta = next((v for k, v in tokens.items() if norm(k) == norm(nombre)), None)
+        # CABA no tiene cuenta propia: se publica en la cuenta de Buenos Aires
+        nombre_cuenta = CUENTA_DE.get(norm(nombre), nombre)
+        cuenta = next((v for k, v in tokens.items() if norm(k) == norm(nombre_cuenta)), None)
         if not cuenta:
             log(f"[{nombre}] sin cuenta conectada, salteo")
             continue
