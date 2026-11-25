@@ -9,7 +9,10 @@ Cada vez que corre:
 
 Variables de entorno (secretos de GitHub):
   GOOGLE_SA_JSON   contenido del JSON de la cuenta de servicio de Google
-  TOKENS_FILE_ID   id en Drive del archivo tokens.json (provincia -> {user_id, token})
+  TOKENS_FILE_ID   id en Drive del archivo tokens.json:
+                   {"_token": "<token usuario del sistema>",
+                    "Catamarca": {"user_id": "<id cuenta IG>"}, ...}
+                   (una cuenta puede tener su propio "token" si hiciera falta)
   SOLO             (opcional) publicar solo esta provincia, ej. "Catamarca"
   ENSAYO=1         (opcional) hace todo menos publicar
 """
@@ -24,7 +27,8 @@ from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 ART = timezone(timedelta(hours=-3))
 PROVINCIAS_ID = "1rReTBm55NfgOaeIy3uwaV8Z7ZJ1aJBRt"
 TOKENS_ID = os.environ.get("TOKENS_FILE_ID") or "13oOkjd7BaENficOW2Bvkqs5pPDIA4QhN"
-IG = "https://graph.instagram.com/v23.0"
+# Token de "usuario del sistema" del portfolio (no vence) -> API de Graph de Facebook
+IG = "https://graph.facebook.com/v23.0"
 RUPLOAD = "https://rupload.facebook.com/ig-api-upload/v23.0"
 ENSAYO = os.environ.get("ENSAYO") == "1"
 # Carpeta de Drive -> cuenta de Instagram donde se publica (si no es la misma)
@@ -182,8 +186,11 @@ def main():
         if SOLO and norm(SOLO) != norm(nombre):
             continue
         nombre_cuenta = CUENTA_DE.get(norm(nombre), nombre)
-        cuenta = next((v for k, v in tokens.items() if norm(k) == norm(nombre_cuenta)), None)
-        if not cuenta:
+        cuenta = next((v for k, v in tokens.items()
+                       if not k.startswith("_") and norm(k) == norm(nombre_cuenta)), None)
+        if cuenta and not cuenta.get("token"):
+            cuenta = {**cuenta, "token": tokens.get("_token"), "sistema": True}
+        if not cuenta or not cuenta.get("token") or not cuenta.get("user_id"):
             log(f"[{nombre}] sin cuenta conectada, salteo")
             continue
         carpeta = next((f for f in listar(dv, prov["id"]) if f["name"] == hoy), None)
@@ -196,8 +203,9 @@ def main():
         textos = {f["name"]: f for f in archivos if f["name"].endswith("_caption.txt")}
         horas = horario(nombre, len(videos))
 
-        # Refrescar token una vez por semana (dura 60 días)
-        if time.time() - cuenta.get("refrescado", 0) > 7 * 86400:
+        # Token del usuario del sistema: no vence, no hay nada que renovar.
+        # Token propio de la cuenta (caso raro): renovar una vez por semana.
+        if not cuenta.get("sistema") and time.time() - cuenta.get("refrescado", 0) > 7 * 86400:
             try:
                 cuenta["token"] = refrescar_token(cuenta["token"])
                 cuenta["refrescado"] = int(time.time())
