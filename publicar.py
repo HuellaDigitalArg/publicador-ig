@@ -234,6 +234,10 @@ def main():
                 if ya_publicado(cuenta["user_id"], cuenta["token"], caption):
                     log(f"[{nombre}] {video['name']} ya está publicado")
                     continue
+                # REGLA ESTRICTA: solo videos de la misma provincia que la carpeta/cuenta
+                if norm(nombre) not in norm(video["name"]):
+                    log(f"[{nombre}] BLOQUEADO {video['name']}: no es de {nombre}, no se publica")
+                    continue
                 log(f"[{nombre}] toca {video['name']} (horario {hora:%H:%M})")
                 if ENSAYO:
                     break
