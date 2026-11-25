@@ -36,6 +36,8 @@ CUENTA_DE = {"ciudaddebuenosaires": "Buenos Aires"}  # CABA y provincia de BA ->
 SOLO = os.environ.get("SOLO", "").strip()
 # PONERSE_AL_DIA=1: publica TODOS los videos de hoy cuyo horario ya pasó y faltan
 PONERSE_AL_DIA = os.environ.get("PONERSE_AL_DIA") == "1"
+# FORZAR=1 (solo a mano): publica aunque ya haya un Reel con el mismo texto
+FORZAR = os.environ.get("FORZAR") == "1"
 
 
 def log(*a):
@@ -231,7 +233,7 @@ def main():
                 continue  # sin texto no se puede verificar si ya se publicó
             caption = leer_texto(dv, real_id(txt))
             try:
-                if ya_publicado(cuenta["user_id"], cuenta["token"], caption):
+                if not FORZAR and ya_publicado(cuenta["user_id"], cuenta["token"], caption):
                     log(f"[{nombre}] {video['name']} ya está publicado")
                     continue
                 # REGLA ESTRICTA: solo videos de la misma provincia que la carpeta/cuenta

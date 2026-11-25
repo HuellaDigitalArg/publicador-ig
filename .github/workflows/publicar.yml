@@ -20,6 +20,14 @@ on:
         description: "1 = ensayo, no publica"
         required: false
         default: "0"
+      al_dia:
+        description: "1 = publicar TODOS los videos de hoy cuyo horario ya pasó (no solo uno)"
+        required: false
+        default: "0"
+      forzar:
+        description: "1 = publicar aunque ya exista un Reel con el mismo texto"
+        required: false
+        default: "0"
 
 concurrency:
   group: publicar
@@ -41,3 +49,5 @@ jobs:
           TOKENS_FILE_ID: ${{ secrets.TOKENS_FILE_ID }}
           SOLO: ${{ github.event.inputs.solo }}
           ENSAYO: ${{ github.event.inputs.ensayo }}
+          PONERSE_AL_DIA: ${{ github.event.inputs.al_dia }}
+          FORZAR: ${{ github.event.inputs.forzar }}
