@@ -230,6 +230,7 @@ def main():
             caption = leer_texto(dv, real_id(txt))
             try:
                 if ya_publicado(cuenta["user_id"], cuenta["token"], caption):
+                    log(f"[{nombre}] {video['name']} ya está publicado")
                     continue
                 log(f"[{nombre}] toca {video['name']} (horario {hora:%H:%M})")
                 if ENSAYO:
