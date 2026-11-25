@@ -34,6 +34,8 @@ ENSAYO = os.environ.get("ENSAYO") == "1"
 # Carpeta de Drive -> cuenta de Instagram donde se publica (si no es la misma)
 CUENTA_DE = {"ciudaddebuenosaires": "Buenos Aires"}  # CABA y provincia de BA -> @huelladigitalbuenosaires (publicaciones separadas)
 SOLO = os.environ.get("SOLO", "").strip()
+# PONERSE_AL_DIA=1: publica TODOS los videos de hoy cuyo horario ya pasó y faltan
+PONERSE_AL_DIA = os.environ.get("PONERSE_AL_DIA") == "1"
 
 
 def log(*a):
@@ -243,7 +245,8 @@ def main():
             except Exception as e:
                 errores += 1
                 log(f"[{nombre}] ERROR con {video['name']}: {e}")
-            break
+            if not PONERSE_AL_DIA:
+                break  # normal: uno por corrida; al día: todos los atrasados
 
     if tokens_cambiaron:
         guardar_tokens(dv, tokens)
