@@ -23,6 +23,7 @@ from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
 ART = timezone(timedelta(hours=-3))
 PROVINCIAS_ID = "1rReTBm55NfgOaeIy3uwaV8Z7ZJ1aJBRt"
+TOKENS_ID = os.environ.get("TOKENS_FILE_ID") or "13oOkjd7BaENficOW2Bvkqs5pPDIA4QhN"
 IG = "https://graph.instagram.com/v23.0"
 RUPLOAD = "https://rupload.facebook.com/ig-api-upload/v23.0"
 ENSAYO = os.environ.get("ENSAYO") == "1"
@@ -101,12 +102,12 @@ def leer_texto(dv, file_id):
 
 
 def cargar_tokens(dv):
-    return json.loads(leer_texto(dv, os.environ["TOKENS_FILE_ID"]))
+    return json.loads(leer_texto(dv, TOKENS_ID))
 
 
 def guardar_tokens(dv, tokens):
     data = json.dumps(tokens, ensure_ascii=False, indent=2).encode()
-    dv.files().update(fileId=os.environ["TOKENS_FILE_ID"],
+    dv.files().update(fileId=TOKENS_ID,
                       media_body=MediaIoBaseUpload(io.BytesIO(data), "application/json"),
                       supportsAllDrives=True).execute()
 
